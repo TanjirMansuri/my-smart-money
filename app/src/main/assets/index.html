@@ -1,1 +1,201 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Smart Money</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#102b25;
+ color:white;
+ padding:18px;
+}
+header{
+ font-size:25px;
+ font-weight:bold;
+ color:#e5bd68;
+ margin:12px 0 22px;
+}
+.card{
+ background:#1b4037;
+ border:1px solid #426458;
+ border-radius:17px;
+ padding:18px;
+ margin-bottom:15px;
+}
+.label{color:#b8c9c1;font-size:14px}
+.amount{font-size:27px;font-weight:bold;margin-top:9px}
+.gold{color:#e5bd68}
+.grid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:12px;
+}
+h3{color:#e5bd68;margin-top:0}
+input,select{
+ width:100%;
+ padding:13px;
+ border-radius:9px;
+ border:1px solid #56766a;
+ background:#102b25;
+ color:white;
+ margin:7px 0;
+}
+button{
+ width:100%;
+ padding:13px;
+ border:0;
+ border-radius:10px;
+ background:#d9ad58;
+ color:#142b24;
+ font-size:16px;
+ font-weight:bold;
+ margin-top:8px;
+}
+button:active{opacity:.8}
+.progress{
+ height:12px;
+ background:#102b25;
+ border-radius:10px;
+ overflow:hidden;
+ margin-top:12px;
+}
+.bar{
+ height:100%;
+ background:#e5bd68;
+ width:0%;
+}
+.small{font-size:13px;color:#b8c9c1}
+</style>
+</head>
+
+<body>
+
+<header>💰 My Smart Money</header>
+
+<div class="card">
+ <div class="label">Total Monthly Income</div>
+ <div class="amount gold" id="income">₹0</div>
+ <div class="label">Total Expenses</div>
+ <div class="amount" id="expense">₹0</div>
+</div>
+
+<div class="grid">
+ <div class="card">
+  <div class="label">Actual Savings</div>
+  <div class="amount gold" id="actual">₹0</div>
+ </div>
+ <div class="card">
+  <div class="label">Saving Target</div>
+  <div class="amount" id="target">₹0</div>
+ </div>
+</div>
+
+<div class="card">
+ <h3>🎯 Saving Progress</h3>
+ <div class="progress"><div class="bar" id="progress"></div></div>
+ <p class="small" id="progressText">0% completed</p>
+</div>
+
+<div class="card">
+ <h3>➕ Add Income</h3>
+ <input type="number" id="incomeInput" placeholder="Enter income amount">
+ <button onclick="addIncome()">Add Income</button>
+</div>
+
+<div class="card">
+ <h3>💸 Add Expense</h3>
+ <input type="number" id="expenseInput" placeholder="Enter expense amount">
+ <select id="category">
+  <option>Food</option>
+  <option>Shopping</option>
+  <option>Petrol</option>
+  <option>Bills</option>
+  <option>Travel</option>
+  <option>Other</option>
+ </select>
+ <button onclick="addExpense()">Add Expense</button>
+</div>
+
+<div class="card">
+ <h3>🏦 Saving Settings</h3>
+ <label class="small">Monthly saving percentage (%)</label>
+ <input type="number" id="percentage" value="20" min="0" max="100">
+ <button onclick="savePercentage()">Update Target</button>
+</div>
+
+<div class="card">
+ <h3>📊 Financial Summary</h3>
+ <p id="summary" class="small"></p>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem("moneyData")) || {
+ income:0,
+ expense:0,
+ percentage:20
+};
+
+function save(){
+ localStorage.setItem("moneyData",JSON.stringify(data));
+ render();
+}
+
+function addIncome(){
+ let v=Number(document.getElementById("incomeInput").value);
+ if(v<=0)return alert("Enter valid income");
+ data.income+=v;
+ document.getElementById("incomeInput").value="";
+ save();
+}
+
+function addExpense(){
+ let v=Number(document.getElementById("expenseInput").value);
+ if(v<=0)return alert("Enter valid expense");
+ data.expense+=v;
+ document.getElementById("expenseInput").value="";
+ save();
+}
+
+function savePercentage(){
+ let p=Number(document.getElementById("percentage").value);
+ if(p<0||p>100)return alert("Enter percentage between 0 and 100");
+ data.percentage=p;
+ save();
+}
+
+function money(v){
+ return "₹"+v.toLocaleString("en-IN");
+}
+
+function render(){
+ let actual=data.income-data.expense;
+ let target=data.income*data.percentage/100;
+ let saved=Math.max(0,Math.min(actual,target));
+ let progress=target>0?saved/target*100:0;
+
+ document.getElementById("income").innerText=money(data.income);
+ document.getElementById("expense").innerText=money(data.expense);
+ document.getElementById("actual").innerText=money(actual);
+ document.getElementById("target").innerText=money(target);
+ document.getElementById("progress").style.width=Math.min(100,progress)+"%";
+ document.getElementById("progressText").innerText=Math.round(progress)+"% of saving target achieved";
+ document.getElementById("percentage").value=data.percentage;
+
+ document.getElementById("summary").innerText=
+ "Income: "+money(data.income)+
+ " | Expenses: "+money(data.expense)+
+ " | Remaining: "+money(actual)+
+ " | Saving target: "+money(target);
+}
+
+render();
+</script>
+
+</body>
+</html>
